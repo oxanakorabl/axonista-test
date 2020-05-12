@@ -15,15 +15,6 @@ class MainPresenter(private val resultHandler: ResultHandler) {
         val gson = Gson()
         val listPersonType = object : TypeToken<List<Attendee>>() {}.type
         attendees = gson.fromJson(json, listPersonType)
-
-        attendees.map {
-            val date = StringBuilder()
-            it.availableDates.map {
-                date.append(it)
-                date.append(", ")
-            }
-            Log.i("attendees", " ${it.country} ${it.email}  $date")
-        }
     }
 
     fun start() {
@@ -40,15 +31,21 @@ class MainPresenter(private val resultHandler: ResultHandler) {
     }
 
     private fun findBestDates(): String? {
+
         val countries = collectCountries(attendees)
         val result = mutableListOf<Conference>()
 
         countries.map { country ->
+            val mapDateEmails = HashMap<String, MutableSet<String>>()
 
-            val conference = findBestDate(country, attendees)
-            if (conference != null) {
-                result.add(conference)
-            }
+            attendees
+                .filter { it.country == country }
+                .map { attendee ->
+                    validateAttendeeDate(attendee, mapDateEmails)
+                }
+
+            val maxKey = findMax(mapDateEmails)
+            result.add(Conference(country, maxKey, mapDateEmails[maxKey]?.toList()))
         }
 
         val jsonData = Gson().toJson(result)
@@ -56,6 +53,7 @@ class MainPresenter(private val resultHandler: ResultHandler) {
 
         return jsonData
     }
+
 
 }
 

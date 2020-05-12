@@ -1,31 +1,51 @@
 package com.test.test
 
-import android.util.Log
+import java.time.LocalDate
 
 fun collectCountries(attendees: List<Attendee>): HashSet<String> {
     val countries = HashSet<String>()
     attendees.map {
         countries.add(it.country)
     }
-        Log.i("collectCountries", countries.size.toString())
-        countries.map {
-            Log.i("collectCountries", it)
-        }
     return countries
 }
 
+fun validateAttendeeDate(attendee: Attendee, mapDateEmails: HashMap<String, MutableSet<String>>) {
+    val daysList = prepareAttendeeDates(attendee)
 
-fun findBestDate(country: String, attendees: List<Attendee> ): Conference? {
-    val mapDateAndEmails = HashMap<String, MutableSet<String>>()
-    attendees
-        .filter { it.country == country }
-        .map { collectDates(it, mapDateAndEmails) }
+    if (daysList.size > 1) {
 
-    val maxKey = findMax(mapDateAndEmails)
-
-    return Conference(country, maxKey, mapDateAndEmails[maxKey]?.toList())
+        for (i: Int in daysList.size - 1 downTo 1) {
+            val dayBefore = LocalDate.parse(daysList[i]).minusDays(1)
+            if (LocalDate.parse(daysList[i - 1]) == dayBefore) {
+                addKeyAndEmail(mapDateEmails, daysList[i - 1], attendee.email)
+            }
+        }
+    }
 }
 
+fun prepareAttendeeDates(attendee: Attendee): List<String> {
+    val datesSet = HashSet<String>()
+    datesSet.addAll(attendee.availableDates)
+
+    return datesSet
+        .toSortedSet()
+        .toList()
+}
+
+fun addKeyAndEmail(
+    mapDateEmails: HashMap<String, MutableSet<String>>,
+    date: String,
+    email: String
+) {
+    if (mapDateEmails[date] != null) {
+        mapDateEmails[date]?.add(email)
+    } else {
+        val emails = mutableSetOf<String>()
+        emails.add(email)
+        mapDateEmails[date] = emails
+    }
+}
 
 fun findMax(map: HashMap<String, MutableSet<String>>): String {
     var maxSize = 0
@@ -38,26 +58,5 @@ fun findMax(map: HashMap<String, MutableSet<String>>): String {
                 maxKey = it.key
             }
         }
-
-     Log.i("findMax", "maxKey $maxKey maxSize $maxSize")
-
     return maxKey
-}
-
-fun collectDates(attendee: Attendee, map: HashMap<String, MutableSet<String>>) {
-    attendee.availableDates.map {
-        map[it]?.add(attendee.email)
-        if (map[it] != null) {
-            map[it]?.add(attendee.email)
-        } else {
-            val set = mutableSetOf<String>()
-            set.add(attendee.email)
-            map.put(it, set)
-        }
-    }
-        map.map { entry ->
-            entry.value.map {
-                Log.i("collectDates", " ${attendee.country} ${entry.key} $it")
-            }
-        }
 }

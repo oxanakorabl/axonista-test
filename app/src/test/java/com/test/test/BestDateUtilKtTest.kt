@@ -1,8 +1,8 @@
 package com.test.test
 
 
-import org.hamcrest.CoreMatchers
-import org.junit.Assert.*
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 
@@ -53,12 +53,6 @@ class BestDateUtilKtTest {
         assertArrayEquals(actual.toArray(), expected.toTypedArray())
     }
 
-    @Test
-    fun findBestDate() {
-        val expected = Conference("zimbabwe", "2010-02-02", listOf("aaa4@bbb.ru","aaa5@bbb.ru"))
-        val actual = findBestDate("zimbabwe", attendees)
-        assertEquals( expected, actual)
-    }
 
     @Test
     fun findMax() {
@@ -79,7 +73,4 @@ class BestDateUtilKtTest {
         assertEquals( expected, actual)
     }
 
-    @Test
-    fun collectDates() {
-    }
 }
