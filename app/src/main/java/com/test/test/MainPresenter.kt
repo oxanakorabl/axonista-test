@@ -15,6 +15,15 @@ class MainPresenter(private val resultHandler: ResultHandler) {
         val gson = Gson()
         val listPersonType = object : TypeToken<List<Attendee>>() {}.type
         attendees = gson.fromJson(json, listPersonType)
+
+        attendees.map {
+            val date = StringBuilder()
+            it.availableDates.map {
+                date.append(it)
+                date.append(", ")
+            }
+            Log.i("attendees", " ${it.country} ${it.email}  $date")
+        }
     }
 
     fun start() {
@@ -36,7 +45,7 @@ class MainPresenter(private val resultHandler: ResultHandler) {
 
         countries.map { country ->
 
-            val conference = findBestDate(country)
+            val conference = findBestDate(country, attendees)
             if (conference != null) {
                 result.add(conference)
             }
@@ -48,62 +57,8 @@ class MainPresenter(private val resultHandler: ResultHandler) {
         return jsonData
     }
 
-    private fun findBestDate(country: String): Conference? {
-        val mapDateAndEmails = HashMap<String, MutableSet<String>>()
-        attendees
-            .filter { it.country == country }
-            .map { collectDates(it, mapDateAndEmails) }
-
-        val maxKey = findMax(mapDateAndEmails)
-
-        return Conference(country, maxKey, mapDateAndEmails[maxKey]?.toList())
-    }
-
-    private fun findMax(map: HashMap<String, MutableSet<String>>): String {
-        var maxSize = 0
-        var maxKey = ""
-        map
-            .toSortedMap()
-            .map {
-                if (maxSize < it.value.size) {
-                    maxSize = it.value.size
-                    maxKey = it.key
-                }
-            }
-
-        // Log.i("findMax", "maxKey $maxKey maxSize $maxSize")
-
-        return maxKey
-    }
-
-    private fun collectDates(attendee: Attendee, map: HashMap<String, MutableSet<String>>) {
-        attendee.availableDates.map {
-            map[it]?.add(attendee.email)
-            if (map[it] != null) {
-                map[it]?.add(attendee.email)
-            } else {
-                val set = mutableSetOf<String>()
-                set.add(attendee.email)
-                map.put(it, set)
-            }
-        }
-//        map.map { entry ->
-//            entry.value.map {
-//                Log.i("collectDates", "${entry.key} $it")
-//            }
-//        }
-    }
-
-    private fun collectCountries(attendees: List<Attendee>): HashSet<String> {
-        val countries = HashSet<String>()
-        attendees.map {
-            countries.add(it.country)
-        }
-//        Log.i("collectCountries", countries.size.toString())
-//        countries.map {
-//            Log.i("collectCountries", it)
-//        }
-        return countries
-    }
-
 }
+
+
+
+
