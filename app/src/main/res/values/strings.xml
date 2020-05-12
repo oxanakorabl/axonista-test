@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Test</string>
+    <string name="error">Something went wrong</string>
+    <string name="wait_a_sec">Wait a sec...</string>
+</resources>
